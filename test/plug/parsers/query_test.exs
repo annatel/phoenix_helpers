@@ -12,10 +12,10 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
         conn(:get, "/?include[]=include1&include[]=include2")
         |> PlugQueryParser.call(%PlugQueryParser{available_includes: available_includes})
 
-      assert conn.assigns.query_parser == %PlugQueryParser{
+      assert %PlugQueryParser{
                available_includes: available_includes,
                includes: [:include1, :include2]
-             }
+             } = conn.assigns.query_parser
     end
 
     test "when the include query_param contains nested includes, assigns the include to the query_parser according to the preload format" do
@@ -40,7 +40,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
                available_includes: available_includes,
                includes: [
                  :parent2,
-                 parent1: [:child1, [child2: [:grandchild1, :grandchild2]], :child3]
+                 {:parent1, [{:child2, [:grandchild1, :grandchild2]}, :child1, :child3]}
                ]
              } = conn.assigns.query_parser
     end
@@ -57,7 +57,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
 
       assert conn.assigns.query_parser == %PlugQueryParser{
                available_includes: available_includes,
-               includes: [:parent, [parent: :child]]
+               includes: [parent: [:child]]
              }
     end
 
