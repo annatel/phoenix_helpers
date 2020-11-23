@@ -125,7 +125,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   def dedup_includes(includes, separator)
       when is_list(includes) and is_binary(separator) do
     includes
-    |> Enum.sort(:desc)
+    |> Enum.sort(&(&1 >= &2))
     |> Enum.reduce([], fn include, acc ->
       if Enum.any?(acc, &String.starts_with?(&1, include <> separator)) do
         acc
