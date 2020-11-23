@@ -53,16 +53,16 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   defp parse_page(%__MODULE__{} = query_parser, nil), do: parse_page(query_parser, %{})
 
   defp parse_page(%__MODULE__{default_page_size: default_page_size}, page) do
-    number = page |> Map.get("number") |> parse_string_to_integer(1)
-    size = page |> Map.get("size") |> parse_string_to_integer(default_page_size)
+    number = page |> Map.get("number") |> to_integer(1)
+    size = page |> Map.get("size") |> to_integer(default_page_size)
 
     %{number: number, size: size}
   end
 
-  defp parse_string_to_integer(nil, default_value) when is_integer(default_value),
+  defp to_integer(nil, default_value) when is_integer(default_value),
     do: default_value
 
-  defp parse_string_to_integer(string, default_value) when is_integer(default_value) do
+  defp to_integer(string, default_value) when is_integer(default_value) do
     string
     |> Integer.parse()
     |> case do
