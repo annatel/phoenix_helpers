@@ -2,6 +2,7 @@ defmodule PhoenixHelpers.Query do
   @moduledoc """
 
   """
+
   @default_page_size 100
 
   defstruct available_includes: [],

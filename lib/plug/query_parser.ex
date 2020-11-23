@@ -106,6 +106,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
   ## Examples
       iex> PhoenixHelpers.Plug.QueryParser.dedup_includes(["a.b", "a", "a.c"], ".")
       ["a.b", "a.c"]
+
   """
   @spec dedup_includes([binary], binary) :: [binary]
   def dedup_includes(includes, separator)
