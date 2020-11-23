@@ -15,7 +15,6 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
         }
 
   @include_separator "."
-  # import Plug.Conn
 
   @spec init(keyword) :: PhoenixHelpers.Plug.Parsers.QueryParser.t()
   def init(opts) do
@@ -46,29 +45,30 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   defp parse_include(%__MODULE__{available_includes: []}, _query_param_include), do: []
 
   defp parse_include(%__MODULE__{available_includes: available_includes}, query_param_include) do
-      query_param_include
-      |> List.wrap()
-      |> Enum.uniq()
-      |> Enum.filter(&(&1 in available_includes))
-      |> dedup_nested_includes(@include_separator)
-      |> Enum.map(&String.split(&1, @include_separator))
-      |> Enum.reduce([], fn includes, acc ->
-        acc ++ [includes |> Enum.map(&String.to_existing_atom(&1))]
-      end)
-      |> Enum.sort_by(&length/1, :desc)
-      |> Enum.reduce([], fn includes, acc ->
-        acc |> build_includes(includes)
-      end)
-      |> Enum.map(fn
-        {key, []} -> key
-        value -> value
-      end)
+    query_param_include
+    |> List.wrap()
+    |> Enum.uniq()
+    |> Enum.filter(&(&1 in available_includes))
+    |> dedup_nested_includes(@include_separator)
+    |> Enum.map(&String.split(&1, @include_separator))
+    |> Enum.reduce([], fn includes, acc ->
+      acc ++ [includes |> Enum.map(&String.to_existing_atom(&1))]
+    end)
+    |> Enum.sort_by(&length/1, :desc)
+    |> Enum.reduce([], fn includes, acc ->
+      acc |> build_includes(includes)
+    end)
+    |> Enum.map(fn
+      {key, []} -> key
+      value -> value
+    end)
   end
 
   defp build_includes(keyword, []), do: keyword
+
   defp build_includes(keyword, [key | [value]]) do
     current_value = Keyword.get(keyword, key, [])
-    Keyword.put(keyword, key, current_value ++ [value])
+    Keyword.put(keyword, key, [value | current_value])
   end
 
   defp build_includes(keyword, [key | keys]) do
@@ -76,16 +76,16 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
     Keyword.put(keyword, key, build_includes(value, keys))
   end
 
-  defp dedup_nested_includes(includes, separator) when is_list(includes) and is_binary(separator) do
+  defp dedup_nested_includes(includes, separator)
+       when is_list(includes) and is_binary(separator) do
     includes
     |> Enum.sort(:desc)
     |> Enum.reduce([], fn include, acc ->
       if Enum.any?(acc, &String.starts_with?(&1, include <> separator)) do
         acc
       else
-        acc ++ [include]
+        [include | acc]
       end
     end)
-    |> Enum.sort(:asc)
   end
 end

@@ -13,8 +13,8 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
         |> PlugQueryParser.call(%PlugQueryParser{available_includes: available_includes})
 
       assert %PlugQueryParser{
-               available_includes: available_includes,
-               includes: [:include1, :include2]
+               available_includes: ^available_includes,
+               includes: [:include2, :include1]
              } = conn.assigns.query_parser
     end
 
@@ -37,27 +37,26 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
         |> PlugQueryParser.call(%PlugQueryParser{available_includes: available_includes})
 
       assert %PlugQueryParser{
-               available_includes: available_includes,
                includes: [
                  :parent2,
-                 {:parent1, [{:child2, [:grandchild1, :grandchild2]}, :child1, :child3]}
+                 {:parent1, [:child3, :child1, {:child2, [:grandchild2, :grandchild1]}]}
                ]
              } = conn.assigns.query_parser
     end
 
     test "when the include query_param is duplicated, assigns only one of them to the include to the query_parser" do
-      available_includes = ["parent", "parent.child"]
+      available_includes = ["parent", "parent.child", "par"]
 
       conn =
         conn(
           :get,
-          "/?include[]=parent&include[]=parent&include[]=parent.child&include[]=parent.child"
+          "/?include[]=parent&include[]=parent&include[]=parent.child&include[]=parent.child&include[]=par"
         )
         |> PlugQueryParser.call(%PlugQueryParser{available_includes: available_includes})
 
       assert conn.assigns.query_parser == %PlugQueryParser{
                available_includes: available_includes,
-               includes: [parent: [:child]]
+               includes: [:par, parent: [:child]]
              }
     end
 
