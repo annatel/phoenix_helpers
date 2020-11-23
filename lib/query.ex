@@ -25,4 +25,16 @@ defmodule PhoenixHelpers.Query do
           page: %{number: integer, size: integer} | nil,
           q: nil
         }
+
+  @spec new(list, list, integer | nil, integer | nil) :: %__MODULE__{}
+  def new(include \\ [], filter \\ [], default_page_size \\ nil, max_page_size \\ nil) do
+    fields = [
+      available_includes: include,
+      available_filters: filter,
+      default_page_size: default_page_size || @default_page_size,
+      max_page_size: max_page_size || @max_page_size
+    ]
+
+    struct!(__MODULE__, fields)
+  end
 end

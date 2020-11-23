@@ -26,10 +26,12 @@ defmodule PhoenixHelpers.Plug.QueryParser do
 
   @spec init(keyword) :: PhoenixHelpers.Query.t()
   def init(opts) do
-    %Query{
-      available_includes: Keyword.get(opts, :include),
-      available_filters: Keyword.get(opts, :filter)
-    }
+    Query.new(
+      Keyword.get(opts, :include),
+      Keyword.get(opts, :filter),
+      Keyword.get(opts, :default_page_size),
+      Keyword.get(opts, :max_page_size)
+    )
   end
 
   @spec call(Plug.Conn.t(), any) :: Plug.Conn.t()
@@ -75,10 +77,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> Enum.reduce([], fn includes, acc ->
       acc |> build_includes(includes)
     end)
-    |> Enum.map(fn
-      {key, []} -> key
-      value -> value
-    end)
+    |> to_ecto_preload_format()
   end
 
   defp parse_filter(%Query{}, ""), do: []
@@ -192,4 +191,15 @@ defmodule PhoenixHelpers.Plug.QueryParser do
       {integer, _} -> integer
     end
   end
+
+  defp to_ecto_preload_format({key, []}), do: key
+  defp to_ecto_preload_format({key, [value]}), do: {key, value}
+
+  defp to_ecto_preload_format({key, value}) when is_list(value),
+    do: {key, to_ecto_preload_format(value)}
+
+  defp to_ecto_preload_format(list) when is_list(list),
+    do: list |> Enum.map(&to_ecto_preload_format/1)
+
+  defp to_ecto_preload_format(value), do: value
 end
