@@ -58,6 +58,19 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
       assert %PlugQueryParser{includes: [:par, parent: [:child]]} = conn.assigns.query_parser
     end
 
+    test "when available_includes is by key, returns the includes according to the same keys" do
+      available_includes = %{show: ["include1", "include2"], index: ["include1"], update: []}
+
+      conn =
+        conn(:get, "/?include[]=include1&include[]=include2")
+        |> PlugQueryParser.call(%PlugQueryParser{available_includes: available_includes})
+
+      assert %PlugQueryParser{
+               available_includes: ^available_includes,
+               includes: %{show: [:include2, :include1], index: [:include1], update: []}
+             } = conn.assigns.query_parser
+    end
+
     test "when the include query_param is not in the request, set include as nil" do
       conn =
         conn(:get, "/")

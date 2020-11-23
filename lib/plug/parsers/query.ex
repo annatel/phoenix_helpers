@@ -76,9 +76,25 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   end
 
   defp parse_include(%__MODULE__{}, nil), do: nil
-  defp parse_include(%__MODULE__{available_includes: []}, _query_param_include), do: []
 
-  defp parse_include(%__MODULE__{available_includes: available_includes}, query_param_include) do
+  defp parse_include(
+         %__MODULE__{available_includes: available_includes},
+         query_param_include
+       )
+       when is_map(available_includes) do
+    available_includes
+    |> Enum.map(fn {key, values} ->
+      {key, parse_include(values, query_param_include)}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp parse_include(%__MODULE__{available_includes: available_includes}, query_param_include)
+       when is_list(available_includes) do
+    parse_include(available_includes, query_param_include)
+  end
+
+  defp parse_include(available_includes, query_param_include) when is_list(available_includes) do
     query_param_include
     |> List.wrap()
     |> Enum.uniq()
