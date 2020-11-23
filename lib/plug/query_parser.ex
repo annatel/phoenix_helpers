@@ -1,5 +1,20 @@
 defmodule PhoenixHelpers.Plug.QueryParser do
   @moduledoc """
+  A Plug for parsing include, filter, page and q.
+
+  To use it, add it to your controller.
+
+      plug PhoenixHelpers.Plug.QueryParser,
+        include: ~w(posts comments)
+        filter: ~w(name)
+
+  The plug will add a `PhoenixHelpers.Query` struct called `phoenix_helper_query` to your conn.assigns
+
+  ## Options
+
+  * `include` - list or map by action of a available includes. Default is `[]`.
+  * `filter` - list a available filter. Default is `[]`.
+  * `default_page_number`
 
   """
   @behaviour Plug
@@ -66,63 +81,6 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     end)
   end
 
-  defp build_includes(keyword, []), do: keyword
-
-  defp build_includes(keyword, [key | [value]]) do
-    current_value = Keyword.get(keyword, key, [])
-    Keyword.put(keyword, key, [value | current_value])
-  end
-
-  defp build_includes(keyword, [key | keys]) do
-    value = Keyword.get(keyword, key, [])
-    Keyword.put(keyword, key, build_includes(value, keys))
-  end
-
-  defp most_nested_first(includes) do
-    includes |> Enum.sort_by(&length/1, &(&1 >= &2))
-  end
-
-  @doc """
-  Split string or list of string by a separator and convert the result to a list of atoms
-  Returns a list.
-  ## Examples
-      iex> PhoenixHelpers.Plug.QueryParser.split_string_to_atoms(["b", "a.b"], ".")
-      [[:b], [:a, :b]]
-  """
-  @spec split_string_to_atoms(binary | [binary], binary) :: []
-  def split_string_to_atoms(binaries, separator) when is_list(binaries) do
-    binaries
-    |> Enum.map(&split_string_to_atoms(&1, separator))
-  end
-
-  def split_string_to_atoms(binary, separator) when is_binary(separator) do
-    binary
-    |> String.split(separator)
-    |> Enum.map(&String.to_existing_atom(&1))
-  end
-
-  @doc """
-  Remove parent of nested includes
-  Returns a list without the parent includes.
-  ## Examples
-      iex> PhoenixHelpers.Plug.QueryParser.dedup_includes(["a.b", "a", "a.c"], ".")
-      ["a.b", "a.c"]
-
-  """
-  @spec dedup_includes([binary], binary) :: [binary]
-  def dedup_includes(includes, separator)
-      when is_list(includes) and is_binary(separator) do
-    includes
-    |> Enum.sort(&(&1 >= &2))
-    |> Enum.reduce([], fn include, acc ->
-      if Enum.any?(acc, &String.starts_with?(&1, include <> separator)) do
-        acc
-      else
-        [include | acc]
-      end
-    end)
-  end
-
   defp parse_filter(%Query{}, ""), do: []
   defp parse_filter(%Query{}, nil), do: []
 
@@ -154,6 +112,69 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     size = page |> Map.get("size") |> to_integer(default_page_size)
 
     %{number: number, size: size}
+  end
+
+  defp build_includes(keyword, []), do: keyword
+
+  defp build_includes(keyword, [key | [value]]) do
+    current_value = Keyword.get(keyword, key, [])
+    Keyword.put(keyword, key, [value | current_value])
+  end
+
+  defp build_includes(keyword, [key | keys]) do
+    value = Keyword.get(keyword, key, [])
+    Keyword.put(keyword, key, build_includes(value, keys))
+  end
+
+  defp most_nested_first(includes) do
+    includes |> Enum.sort_by(&length/1, &(&1 >= &2))
+  end
+
+  _ = """
+  Split string or list of string by a separator and convert the result to a list of atoms
+  Returns a list.
+
+  ## Examples
+
+      iex> PhoenixHelpers.Plug.QueryParser.split_string_to_atoms(["b", "a.b"], ".")
+      [[:b], [:a, :b]]
+
+  """
+
+  defp split_string_to_atoms(binaries, separator) when is_list(binaries) do
+    binaries
+    |> Enum.map(&split_string_to_atoms(&1, separator))
+  end
+
+  defp split_string_to_atoms(binary, separator) when is_binary(separator) do
+    binary
+    |> String.split(separator)
+    |> Enum.map(&String.to_existing_atom(&1))
+  end
+
+  _ = """
+  Remove parent of nested includes
+  Returns a list without the parent includes.
+
+  ## Examples
+
+
+      iex> PhoenixHelpers.Plug.QueryParser.dedup_includes(["a.b", "a", "a.c"], ".")
+      ["a.b", "a.c"]
+
+  """
+
+  defp dedup_includes(includes, separator)
+       when is_list(includes) and is_binary(separator) do
+    includes
+    |> Enum.sort(&(&1 >= &2))
+    |> Enum.reduce([], fn include, acc ->
+      if Enum.any?(acc, &String.starts_with?(&1, include <> separator)) do
+        acc
+      else
+        [include | acc]
+      end
+    end)
   end
 
   defp to_integer(nil, default_value) when is_integer(default_value),
