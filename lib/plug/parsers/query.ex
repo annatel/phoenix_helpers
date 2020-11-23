@@ -6,15 +6,20 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
 
   import Plug.Conn
 
+  @include_separator "."
+  @default_page_size 100
+
   defstruct available_includes: [],
-            includes: nil
+            includes: nil,
+            default_page_size: @default_page_size,
+            page: nil
 
   @type t :: %__MODULE__{
           available_includes: [binary] | nil,
-          includes: [atom] | nil
+          includes: [atom] | nil,
+          default_page_size: integer,
+          page: %{number: integer, size: integer} | nil
         }
-
-  @include_separator "."
 
   @spec init(keyword) :: PhoenixHelpers.Plug.Parsers.QueryParser.t()
   def init(opts) do
@@ -33,12 +38,37 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
     query_param_include = Map.get(query_params, "include")
     includes = parse_include(query_parser, query_param_include)
 
+    query_param_page = Map.get(query_params, "page")
+    page = parse_page(query_parser, query_param_page)
+
     query_parser =
       query_parser
       |> Map.put(:includes, includes)
+      |> Map.put(:page, page)
 
     conn
     |> assign(:query_parser, query_parser)
+  end
+
+  defp parse_page(%__MODULE__{} = query_parser, nil), do: parse_page(query_parser, %{})
+
+  defp parse_page(%__MODULE__{default_page_size: default_page_size}, page) do
+    number = page |> Map.get("number") |> parse_string_to_integer(1)
+    size = page |> Map.get("size") |> parse_string_to_integer(default_page_size)
+
+    %{number: number, size: size}
+  end
+
+  defp parse_string_to_integer(nil, default_value) when is_integer(default_value),
+    do: default_value
+
+  defp parse_string_to_integer(string, default_value) when is_integer(default_value) do
+    string
+    |> Integer.parse()
+    |> case do
+      :error -> default_value
+      {integer, _} -> integer
+    end
   end
 
   defp parse_include(%__MODULE__{}, nil), do: nil
