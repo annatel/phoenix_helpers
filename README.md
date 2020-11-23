@@ -1,5 +1,7 @@
 # PhoenixHelpers
 
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/annatel/phoenix_helpers/CI?cacheSeconds=3600&style=flat-square)](https://github.com/annatel/phoenix_helpers/actions) [![GitHub issues](https://img.shields.io/github/issues-raw/annatel/phoenix_helpers?style=flat-square&cacheSeconds=3600)](https://github.com/annatel/phoenix_helpers/issues) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?cacheSeconds=3600?style=flat-square)](http://opensource.org/licenses/MIT) [![Hex.pm](https://img.shields.io/hexpm/v/phoenix_helpers?style=flat-square)](https://hex.pm/packages/phoenix_helpers) [![Hex.pm](https://img.shields.io/hexpm/dt/phoenix_helpers?style=flat-square)](https://hex.pm/packages/phoenix_helpers)
+
 A Small collection of functions to make easier render fields of a schema with its associations.  
 A Plug for parsing include, filter, page and q. 
 
