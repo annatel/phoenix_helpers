@@ -123,4 +123,19 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
       assert %PlugQueryParser{page: %{size: 10}} = conn.assigns.query_parser
     end
   end
+
+  describe "query" do
+    test "when q is in the query_param, set the q in the query" do
+      conn = conn(:get, "/?q=query") |> PlugQueryParser.call(%PlugQueryParser{})
+      assert %PlugQueryParser{q: "query"} = conn.assigns.query_parser
+
+      conn = conn(:get, "/?q=") |> PlugQueryParser.call(%PlugQueryParser{})
+      assert %PlugQueryParser{q: ""} = conn.assigns.query_parser
+    end
+
+    test "when q not is in the query_param, set the q to nil the query" do
+      conn = conn(:get, "/") |> PlugQueryParser.call(%PlugQueryParser{})
+      assert %PlugQueryParser{q: nil} = conn.assigns.query_parser
+    end
+  end
 end

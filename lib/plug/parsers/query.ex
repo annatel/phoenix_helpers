@@ -12,7 +12,8 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   defstruct available_includes: [],
             includes: nil,
             default_page_size: @default_page_size,
-            page: nil
+            page: nil,
+            q: nil
 
   @type t :: %__MODULE__{
           available_includes: [binary] | nil,
@@ -41,10 +42,13 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
     query_param_page = Map.get(query_params, "page")
     page = parse_page(query_parser, query_param_page)
 
+    query_param_query = Map.get(query_params, "q")
+
     query_parser =
       query_parser
       |> Map.put(:includes, includes)
       |> Map.put(:page, page)
+      |> Map.put(:q, query_param_query)
 
     conn
     |> assign(:query_parser, query_parser)
