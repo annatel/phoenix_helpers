@@ -78,29 +78,25 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   defp parse_include(%__MODULE__{}, nil), do: nil
 
   defp parse_include(%__MODULE__{available_includes: available_includes}, include)
-       when is_map(available_includes) and is_binary(include) do
+       when is_map(available_includes) do
     available_includes
     |> Enum.map(&{elem(&1, 0), parse_include(elem(&1, 1), include)})
     |> Enum.into(%{})
   end
 
   defp parse_include(%__MODULE__{available_includes: available_includes}, include)
-       when is_list(available_includes) and is_binary(include) do
+       when is_list(available_includes) do
     parse_include(available_includes, include)
   end
 
-  defp parse_include(available_includes, include)
-       when is_list(available_includes) and is_binary(include) do
+  defp parse_include(available_includes, include) when is_list(available_includes) do
     include
     |> List.wrap()
     |> Enum.uniq()
     |> Enum.filter(&(&1 in available_includes))
     |> dedup_includes(@include_separator)
-    |> Enum.map(&String.split(&1, @include_separator))
-    |> Enum.reduce([], fn includes, acc ->
-      acc ++ [includes |> Enum.map(&String.to_existing_atom(&1))]
-    end)
-    |> Enum.sort_by(&length/1, &(&1 >= &2))
+    |> split_string_to_atoms(@include_separator)
+    |> most_nested_first()
     |> Enum.reduce([], fn includes, acc ->
       acc |> build_includes(includes)
     end)
@@ -120,6 +116,33 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   defp build_includes(keyword, [key | keys]) do
     value = Keyword.get(keyword, key, [])
     Keyword.put(keyword, key, build_includes(value, keys))
+  end
+
+  defp most_nested_first(includes) do
+    includes |> Enum.sort_by(&length/1, &(&1 >= &2))
+  end
+
+  @doc """
+  Split string or list of string by a separator and convert the result to a list of atoms
+
+  Returns a list.
+
+  ## Examples
+
+      iex> PhoenixHelpers.Plug.Parsers.QueryParser.split_string_to_atoms(["b", "a.b"], ".")
+      [[:b], [:a, :b]]
+
+  """
+  @spec split_string_to_atoms(binary | [binary], binary) :: []
+  def split_string_to_atoms(binaries, separator) when is_list(binaries) do
+    binaries
+    |> Enum.map(&split_string_to_atoms(&1, separator))
+  end
+
+  def split_string_to_atoms(binary, separator) when is_binary(separator) do
+    binary
+    |> String.split(separator)
+    |> Enum.map(&String.to_existing_atom(&1))
   end
 
   @doc """
