@@ -77,25 +77,21 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
 
   defp parse_include(%__MODULE__{}, nil), do: nil
 
-  defp parse_include(
-         %__MODULE__{available_includes: available_includes},
-         query_param_include
-       )
-       when is_map(available_includes) do
+  defp parse_include(%__MODULE__{available_includes: available_includes}, include)
+       when is_map(available_includes) and is_binary(include) do
     available_includes
-    |> Enum.map(fn {key, values} ->
-      {key, parse_include(values, query_param_include)}
-    end)
+    |> Enum.map(&{elem(&1, 0), parse_include(elem(&1, 1), include)})
     |> Enum.into(%{})
   end
 
-  defp parse_include(%__MODULE__{available_includes: available_includes}, query_param_include)
-       when is_list(available_includes) do
-    parse_include(available_includes, query_param_include)
+  defp parse_include(%__MODULE__{available_includes: available_includes}, include)
+       when is_list(available_includes) and is_binary(include) do
+    parse_include(available_includes, include)
   end
 
-  defp parse_include(available_includes, query_param_include) when is_list(available_includes) do
-    query_param_include
+  defp parse_include(available_includes, include)
+       when is_list(available_includes) and is_binary(include) do
+    include
     |> List.wrap()
     |> Enum.uniq()
     |> Enum.filter(&(&1 in available_includes))
