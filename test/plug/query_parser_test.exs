@@ -118,6 +118,12 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{page: %{number: 1, size: 1}} = conn.assigns.phoenix_helper_query
     end
 
+    test "when only page[size] is greater than max_page_size, set the page[size] to the max_page_size" do
+      conn = conn(:get, "/?page[size]=500") |> QueryParser.call(%Query{max_page_size: 100})
+
+      assert %Query{page: %{number: 1, size: 100}} = conn.assigns.phoenix_helper_query
+    end
+
     test "when neither page[size] or page[number] are in the query params, set default for both and set the page in the query_parser" do
       conn = conn(:get, "/") |> QueryParser.call(%Query{})
 

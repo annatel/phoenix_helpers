@@ -107,9 +107,13 @@ defmodule PhoenixHelpers.Plug.QueryParser do
 
   defp parse_page(%Query{} = query, nil), do: parse_page(query, %{})
 
-  defp parse_page(%Query{default_page_size: default_page_size}, page) do
+  defp parse_page(
+         %Query{default_page_size: default_page_size, max_page_size: max_page_size},
+         page
+       ) do
     number = page |> Map.get("number") |> to_integer(1)
     size = page |> Map.get("size") |> to_integer(default_page_size)
+    size = if size > max_page_size, do: max_page_size, else: size
 
     %{number: number, size: size}
   end
