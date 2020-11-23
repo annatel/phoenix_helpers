@@ -88,7 +88,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
     |> Enum.reduce([], fn includes, acc ->
       acc ++ [includes |> Enum.map(&String.to_existing_atom(&1))]
     end)
-    |> Enum.sort_by(&length/1, :desc)
+    |> Enum.sort_by(&length/1, &(&1 >= &2))
     |> Enum.reduce([], fn includes, acc ->
       acc |> build_includes(includes)
     end)
