@@ -12,7 +12,8 @@ defmodule PhoenixHelpers.Plug.QueryParser do
   @spec init(keyword) :: PhoenixHelpers.Query.t()
   def init(opts) do
     %Query{
-      available_includes: Keyword.get(opts, :include)
+      available_includes: Keyword.get(opts, :include),
+      available_filters: Keyword.get(opts, :filter)
     }
   end
 
