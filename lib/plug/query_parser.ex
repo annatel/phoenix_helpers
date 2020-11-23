@@ -26,7 +26,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     phoenix_helper_query =
       query
       |> Map.put(:includes, parse_include(query, Map.get(query_params, "include")))
-      |> Map.put(:filters, parse_filter(query, Map.get(query_params, "filter"))
+      |> Map.put(:filters, parse_filter(query, Map.get(query_params, "filter")))
       |> Map.put(:page, parse_page(query, Map.get(query_params, "page")))
       |> Map.put(:q, Map.get(query_params, "q"))
 

@@ -17,7 +17,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{
                available_includes: ^available_includes,
                includes: [:include2, :include1]
-             } = conn.assigns.query_parser
+             } = conn.assigns.phoenix_helper_query
     end
 
     test "when the include query_param contains nested includes, assigns the include to the query_parser according to the preload format" do
@@ -43,7 +43,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
                  :parent2,
                  {:parent1, [:child3, :child1, {:child2, [:grandchild2, :grandchild1]}]}
                ]
-             } = conn.assigns.query_parser
+             } = conn.assigns.phoenix_helper_query
     end
 
     test "when the include query_param is duplicated, assigns only one of them to the include in the query_parser" do
@@ -56,7 +56,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         )
         |> QueryParser.call(%Query{available_includes: available_includes})
 
-      assert %Query{includes: [:par, parent: [:child]]} = conn.assigns.query_parser
+      assert %Query{includes: [:par, parent: [:child]]} = conn.assigns.phoenix_helper_query
     end
 
     test "when available_includes is by key, returns the includes according to the same keys" do
@@ -69,7 +69,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{
                available_includes: ^available_includes,
                includes: %{show: [:include2, :include1], index: [:include1], update: []}
-             } = conn.assigns.query_parser
+             } = conn.assigns.phoenix_helper_query
     end
 
     test "when the include query_param is not in the request, set include as nil" do
@@ -77,7 +77,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         conn(:get, "/")
         |> QueryParser.call(%Query{available_includes: ["include1"]})
 
-      assert %Query{includes: nil} = conn.assigns.query_parser
+      assert %Query{includes: nil} = conn.assigns.phoenix_helper_query
     end
 
     test "when the include query_param is empty, set includes as an empty list" do
@@ -85,7 +85,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         conn(:get, "/?include=")
         |> QueryParser.call(%Query{available_includes: ["include1"]})
 
-      assert %Query{includes: []} = conn.assigns.query_parser
+      assert %Query{includes: []} = conn.assigns.phoenix_helper_query
     end
 
     test "when include is not part of the available_includes, ignore it" do
@@ -93,16 +93,15 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         conn(:get, "/?include=include2")
         |> QueryParser.call(%Query{available_includes: ["include1"]})
 
-      assert %Query{includes: []} = conn.assigns.query_parser
+      assert %Query{includes: []} = conn.assigns.phoenix_helper_query
     end
   end
 
   describe "page" do
     test "when page[number] and page[size] are in the query params, set the page in the query_parser" do
-      conn =
-        conn(:get, "/?page[number]=10&page[size]=1") |> QueryParser.call(%Query{})
+      conn = conn(:get, "/?page[number]=10&page[size]=1") |> QueryParser.call(%Query{})
 
-      assert %Query{page: %{number: 10, size: 1}} = conn.assigns.query_parser
+      assert %Query{page: %{number: 10, size: 1}} = conn.assigns.phoenix_helper_query
     end
 
     test "when only page[number] is in the query params, set default for page[size] and set the page in the query_parser" do
@@ -110,49 +109,48 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         conn(:get, "/?page[number]=10")
         |> QueryParser.call(%Query{default_page_size: 100})
 
-      assert %Query{page: %{number: 10, size: 100}} = conn.assigns.query_parser
+      assert %Query{page: %{number: 10, size: 100}} = conn.assigns.phoenix_helper_query
     end
 
     test "when only page[size] is in the query params, set default for page[number] and set the page in the query_parser" do
       conn = conn(:get, "/?page[size]=1") |> QueryParser.call(%Query{})
 
-      assert %Query{page: %{number: 1, size: 1}} = conn.assigns.query_parser
+      assert %Query{page: %{number: 1, size: 1}} = conn.assigns.phoenix_helper_query
     end
 
     test "when neither page[size] or page[number] are in the query params, set default for both and set the page in the query_parser" do
       conn = conn(:get, "/") |> QueryParser.call(%Query{})
 
-      assert %Query{page: %{number: 1, size: 100}} = conn.assigns.query_parser
+      assert %Query{page: %{number: 1, size: 100}} = conn.assigns.phoenix_helper_query
     end
 
     test "when page paramter is set with other value thant size and number, ignore them" do
       conn = conn(:get, "/?page[page_size]=10") |> QueryParser.call(%Query{})
 
-      assert %Query{page: %{number: 1, size: 100}} = conn.assigns.query_parser
+      assert %Query{page: %{number: 1, size: 100}} = conn.assigns.phoenix_helper_query
     end
 
     test "can override the default_page_size" do
       conn = conn(:get, "/") |> QueryParser.call(%Query{default_page_size: 10})
 
-      assert %Query{page: %{size: 10}} = conn.assigns.query_parser
+      assert %Query{page: %{size: 10}} = conn.assigns.phoenix_helper_query
     end
   end
 
   describe "query" do
     test "when q is in the query_param, set the q in the query" do
       conn = conn(:get, "/?q=query") |> QueryParser.call(%Query{})
-      assert %Query{q: "query"} = conn.assigns.query_parser
+      assert %Query{q: "query"} = conn.assigns.phoenix_helper_query
 
       conn = conn(:get, "/?q=") |> QueryParser.call(%Query{})
-      assert %Query{q: ""} = conn.assigns.query_parser
+      assert %Query{q: ""} = conn.assigns.phoenix_helper_query
     end
 
     test "when q not is in the query_param, set the q to nil the query" do
       conn = conn(:get, "/") |> QueryParser.call(%Query{})
-      assert %Query{q: nil} = conn.assigns.query_parser
+      assert %Query{q: nil} = conn.assigns.phoenix_helper_query
     end
   end
-end
 
   describe "parse_filter" do
     test "set filter" do
