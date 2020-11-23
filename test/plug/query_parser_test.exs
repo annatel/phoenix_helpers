@@ -8,15 +8,28 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
 
   describe "parse include" do
     test "when the include query_param is part of the available_includes, assigns the include to the query_parser" do
-      available_includes = ["include1", "include2"]
+      available_includes = [
+        "include1",
+        "include2.include3",
+        "include4.include5.include6",
+        "include7.include8.include9.include10"
+      ]
 
       conn =
-        conn(:get, "/?include[]=include1&include[]=include2")
+        conn(
+          :get,
+          "/?include[]=include1&include[]=include2.include3&include[]=include4.include5.include6&include[]=include7.include8.include9.include10"
+        )
         |> QueryParser.call(%Query{available_includes: available_includes})
 
       assert %Query{
                available_includes: ^available_includes,
-               includes: [:include2, :include1]
+               includes: [
+                 :include1,
+                 {:include2, :include3},
+                 {:include4, {:include5, :include6}},
+                 {:include7, {:include8, {:include9, :include10}}}
+               ]
              } = conn.assigns.phoenix_helper_query
     end
 

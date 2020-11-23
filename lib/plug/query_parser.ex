@@ -78,6 +78,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
       acc |> build_includes(includes)
     end)
     |> to_ecto_preload_format()
+    |> List.wrap()
   end
 
   defp parse_filter(%Query{}, ""), do: []
@@ -193,10 +194,12 @@ defmodule PhoenixHelpers.Plug.QueryParser do
   end
 
   defp to_ecto_preload_format({key, []}), do: key
-  defp to_ecto_preload_format({key, [value]}), do: {key, value}
 
-  defp to_ecto_preload_format({key, value}) when is_list(value),
-    do: {key, to_ecto_preload_format(value)}
+  defp to_ecto_preload_format({key, [value]}) when is_atom(value), do: {key, value}
+
+  defp to_ecto_preload_format({key, value}), do: {key, to_ecto_preload_format(value)}
+
+  defp to_ecto_preload_format([value]), do: to_ecto_preload_format(value)
 
   defp to_ecto_preload_format(list) when is_list(list),
     do: list |> Enum.map(&to_ecto_preload_format/1)
