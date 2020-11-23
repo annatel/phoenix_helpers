@@ -1,5 +1,6 @@
 defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
   use ExUnit.Case, async: true
+  doctest PhoenixHelpers.Plug.Parsers.QueryParser
   use Plug.Test
 
   alias PhoenixHelpers.Plug.Parsers.QueryParser, as: PlugQueryParser
