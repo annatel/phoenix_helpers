@@ -6,15 +6,21 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
 
   import Plug.Conn
 
+  @include_separator "."
+  @default_page_size 100
+
   defstruct available_includes: [],
-            includes: nil
+            includes: nil,
+            default_page_size: @default_page_size,
+            page: nil,
+            q: nil
 
   @type t :: %__MODULE__{
           available_includes: [binary] | nil,
-          includes: [atom] | nil
+          includes: [atom] | nil,
+          default_page_size: integer,
+          page: %{number: integer, size: integer} | nil
         }
-
-  @include_separator "."
 
   @spec init(keyword) :: PhoenixHelpers.Plug.Parsers.QueryParser.t()
   def init(opts) do
@@ -33,12 +39,40 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
     query_param_include = Map.get(query_params, "include")
     includes = parse_include(query_parser, query_param_include)
 
+    query_param_page = Map.get(query_params, "page")
+    page = parse_page(query_parser, query_param_page)
+
+    query_param_query = Map.get(query_params, "q")
+
     query_parser =
       query_parser
       |> Map.put(:includes, includes)
+      |> Map.put(:page, page)
+      |> Map.put(:q, query_param_query)
 
     conn
     |> assign(:query_parser, query_parser)
+  end
+
+  defp parse_page(%__MODULE__{} = query_parser, nil), do: parse_page(query_parser, %{})
+
+  defp parse_page(%__MODULE__{default_page_size: default_page_size}, page) do
+    number = page |> Map.get("number") |> to_integer(1)
+    size = page |> Map.get("size") |> to_integer(default_page_size)
+
+    %{number: number, size: size}
+  end
+
+  defp to_integer(nil, default_value) when is_integer(default_value),
+    do: default_value
+
+  defp to_integer(string, default_value) when is_integer(default_value) do
+    string
+    |> Integer.parse()
+    |> case do
+      :error -> default_value
+      {integer, _} -> integer
+    end
   end
 
   defp parse_include(%__MODULE__{}, nil), do: nil
@@ -54,7 +88,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
     |> Enum.reduce([], fn includes, acc ->
       acc ++ [includes |> Enum.map(&String.to_existing_atom(&1))]
     end)
-    |> Enum.sort_by(&length/1, :desc)
+    |> Enum.sort_by(&length/1, &(&1 >= &2))
     |> Enum.reduce([], fn includes, acc ->
       acc |> build_includes(includes)
     end)
@@ -91,7 +125,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParser do
   def dedup_includes(includes, separator)
       when is_list(includes) and is_binary(separator) do
     includes
-    |> Enum.sort(:desc)
+    |> Enum.sort(&(&1 >= &2))
     |> Enum.reduce([], fn include, acc ->
       if Enum.any?(acc, &String.starts_with?(&1, include <> separator)) do
         acc

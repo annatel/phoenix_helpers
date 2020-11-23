@@ -45,7 +45,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
              } = conn.assigns.query_parser
     end
 
-    test "when the include query_param is duplicated, assigns only one of them to the include to the query_parser" do
+    test "when the include query_param is duplicated, assigns only one of them to the include in the query_parser" do
       available_includes = ["parent", "parent.child", "par"]
 
       conn =
@@ -55,10 +55,7 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
         )
         |> PlugQueryParser.call(%PlugQueryParser{available_includes: available_includes})
 
-      assert conn.assigns.query_parser == %PlugQueryParser{
-               available_includes: available_includes,
-               includes: [:par, parent: [:child]]
-             }
+      assert %PlugQueryParser{includes: [:par, parent: [:child]]} = conn.assigns.query_parser
     end
 
     test "when the include query_param is not in the request, set include as nil" do
@@ -82,10 +79,63 @@ defmodule PhoenixHelpers.Plug.Parsers.QueryParserTest do
         conn(:get, "/?include=include2")
         |> PlugQueryParser.call(%PlugQueryParser{available_includes: ["include1"]})
 
-      assert %PlugQueryParser{
-               available_includes: ["include1"],
-               includes: []
-             } = conn.assigns.query_parser
+      assert %PlugQueryParser{includes: []} = conn.assigns.query_parser
+    end
+  end
+
+  describe "page" do
+    test "when page[number] and page[size] are in the query params, set the page in the query_parser" do
+      conn =
+        conn(:get, "/?page[number]=10&page[size]=1") |> PlugQueryParser.call(%PlugQueryParser{})
+
+      assert %PlugQueryParser{page: %{number: 10, size: 1}} = conn.assigns.query_parser
+    end
+
+    test "when only page[number] is in the query params, set default for page[size] and set the page in the query_parser" do
+      conn =
+        conn(:get, "/?page[number]=10")
+        |> PlugQueryParser.call(%PlugQueryParser{default_page_size: 100})
+
+      assert %PlugQueryParser{page: %{number: 10, size: 100}} = conn.assigns.query_parser
+    end
+
+    test "when only page[size] is in the query params, set default for page[number] and set the page in the query_parser" do
+      conn = conn(:get, "/?page[size]=1") |> PlugQueryParser.call(%PlugQueryParser{})
+
+      assert %PlugQueryParser{page: %{number: 1, size: 1}} = conn.assigns.query_parser
+    end
+
+    test "when neither page[size] or page[number] are in the query params, set default for both and set the page in the query_parser" do
+      conn = conn(:get, "/") |> PlugQueryParser.call(%PlugQueryParser{})
+
+      assert %PlugQueryParser{page: %{number: 1, size: 100}} = conn.assigns.query_parser
+    end
+
+    test "when page paramter is set with other value thant size and number, ignore them" do
+      conn = conn(:get, "/?page[page_size]=10") |> PlugQueryParser.call(%PlugQueryParser{})
+
+      assert %PlugQueryParser{page: %{number: 1, size: 100}} = conn.assigns.query_parser
+    end
+
+    test "can override the default_page_size" do
+      conn = conn(:get, "/") |> PlugQueryParser.call(%PlugQueryParser{default_page_size: 10})
+
+      assert %PlugQueryParser{page: %{size: 10}} = conn.assigns.query_parser
+    end
+  end
+
+  describe "query" do
+    test "when q is in the query_param, set the q in the query" do
+      conn = conn(:get, "/?q=query") |> PlugQueryParser.call(%PlugQueryParser{})
+      assert %PlugQueryParser{q: "query"} = conn.assigns.query_parser
+
+      conn = conn(:get, "/?q=") |> PlugQueryParser.call(%PlugQueryParser{})
+      assert %PlugQueryParser{q: ""} = conn.assigns.query_parser
+    end
+
+    test "when q not is in the query_param, set the q to nil the query" do
+      conn = conn(:get, "/") |> PlugQueryParser.call(%PlugQueryParser{})
+      assert %PlugQueryParser{q: nil} = conn.assigns.query_parser
     end
   end
 end
