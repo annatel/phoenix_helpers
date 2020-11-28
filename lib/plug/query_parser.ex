@@ -81,9 +81,6 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> List.wrap()
   end
 
-  defp parse_filter(%Query{}, ""), do: []
-  defp parse_filter(%Query{}, nil), do: []
-
   defp parse_filter(%Query{available_filters: available_filters}, filter)
        when is_map(available_filters) and is_map(filter) do
     available_filters
@@ -96,7 +93,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     parse_filter(available_filters, filter)
   end
 
-  defp parse_filter(%Query{}, _), do: []
+  defp parse_filter(%Query{} = query, _), do: parse_filter(query, %{})
 
   defp parse_filter(available_filters, filter) do
     filter

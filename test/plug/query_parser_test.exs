@@ -86,6 +86,19 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
              } = conn.assigns.phoenix_helper_query
     end
 
+    test "when available_includes is by key and the includes are empty, returns the includes according to the same keys" do
+      available_includes = %{show: ["include1", "include2"], index: ["include1"], update: []}
+
+      conn =
+        conn(:get, "/?include=")
+        |> QueryParser.call(%Query{available_includes: available_includes})
+
+      assert %Query{
+               available_includes: ^available_includes,
+               includes: %{show: [], index: [], update: []}
+             } = conn.assigns.phoenix_helper_query
+    end
+
     test "when the include query_param is not in the request, set include as nil" do
       conn =
         conn(:get, "/")
@@ -235,6 +248,19 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{
                available_filters: ^available_filters,
                filters: []
+             } = conn.assigns.phoenix_helper_query
+    end
+
+    test "when available_filters are defined by keys and is empty" do
+      available_filters = %{index: ["key1"], show: ["key2"]}
+
+      conn =
+        conn(:get, "/?filter=")
+        |> QueryParser.call(%Query{available_filters: available_filters})
+
+      assert %Query{
+               #  available_filters: ^available_filters,
+               filters: %{index: [], show: []}
              } = conn.assigns.phoenix_helper_query
     end
 
