@@ -71,7 +71,6 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> List.wrap()
     |> Enum.uniq()
     |> Enum.filter(&(&1 in available_includes))
-    |> dedup_includes(@include_separator)
     |> split_string_to_atoms(@include_separator)
     |> most_nested_first()
     |> Enum.reduce([], fn includes, acc ->
@@ -151,31 +150,6 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     binary
     |> String.split(separator)
     |> Enum.map(&String.to_existing_atom(&1))
-  end
-
-  _ = """
-  Remove parent of nested includes
-  Returns a list without the parent includes.
-
-  ## Examples
-
-
-      iex> PhoenixHelpers.Plug.QueryParser.dedup_includes(["a.b", "a", "a.c"], ".")
-      ["a.b", "a.c"]
-
-  """
-
-  defp dedup_includes(includes, separator)
-       when is_list(includes) and is_binary(separator) do
-    includes
-    |> Enum.sort(&(&1 >= &2))
-    |> Enum.reduce([], fn include, acc ->
-      if Enum.any?(acc, &String.starts_with?(&1, include <> separator)) do
-        acc
-      else
-        [include | acc]
-      end
-    end)
   end
 
   defp to_integer(nil, default_value) when is_integer(default_value),

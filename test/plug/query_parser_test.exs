@@ -55,7 +55,12 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
                includes: [
                  :parent2,
                  {:parent1,
-                  [:child1, {:child3, :grandchild1}, {:child2, [:grandchild2, :grandchild1]}]}
+                  [
+                    :child2,
+                    :child1,
+                    {:child3, :grandchild1},
+                    {:child2, [:grandchild2, :grandchild1]}
+                  ]}
                ]
              } = conn.assigns.phoenix_helper_query
     end
