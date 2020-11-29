@@ -72,10 +72,12 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> Enum.uniq()
     |> Enum.filter(&(&1 in available_includes))
     |> split_string_to_atoms(@include_separator)
-    |> most_nested_first()
+    # |> most_nested_first()
+    |> IO.inspect(label: "BEFORE")
     |> Enum.reduce([], fn includes, acc ->
       acc |> build_includes(includes)
     end)
+    |> IO.inspect(label: "AFTER")
     |> to_ecto_preload_format()
     |> List.wrap()
   end
@@ -121,14 +123,15 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     Keyword.put(keyword, key, [value | current_value])
   end
 
-  defp build_includes(keyword, [key | keys]) do
+  defp build_includes(keyword, [key | keys] = a) do
+    IO.inspect(a)
     value = Keyword.get(keyword, key, [])
     Keyword.put(keyword, key, build_includes(value, keys))
   end
 
-  defp most_nested_first(includes) do
-    includes |> Enum.sort_by(&length/1, &(&1 >= &2))
-  end
+  # defp most_nested_first(includes) do
+  #   includes |> Enum.sort_by(&length/1, &(&1 >= &2))
+  # end
 
   _ = """
   Split string or list of string by a separator and convert the result to a list of atoms
