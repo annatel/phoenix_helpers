@@ -13,7 +13,7 @@ by adding `phoenix_helpers` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:phoenix_helpers, "~> 0.1.0"}
+    {:phoenix_helpers, "~> 0.5.0"}
   ]
 end
 ```
