@@ -33,7 +33,23 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
              } = conn.assigns.phoenix_helper_query
     end
 
-    test "when the include query_param contains nested includes, assigns the include to the query_parser according to the preload format" do
+    test "when the include query_param contains nested includes with one child, assigns the include to the query_parser" do
+      available_includes = ["include0", "include1", "include1.include2"]
+
+      conn =
+        conn(
+          :get,
+          "/?include[]=include1&include[]=include1.include2&include[]=include0"
+        )
+        |> QueryParser.call(%Query{available_includes: available_includes})
+
+      assert %Query{
+               available_includes: ^available_includes,
+               includes: [:include0, :include1, {:include1, :include2}]
+             } = conn.assigns.phoenix_helper_query
+    end
+
+    test "when the include query_param contains nested includes with multiple child, assigns the include to the query_parser according to the preload format" do
       available_includes = [
         "parent1",
         "parent1.child1",
@@ -54,13 +70,9 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{
                includes: [
                  :parent2,
-                 {:parent1,
-                  [
-                    :child2,
-                    :child1,
-                    {:child3, :grandchild1},
-                    {:child2, [:grandchild2, :grandchild1]}
-                  ]}
+                 :parent1,
+                 {:parent1, [:child2, :child1]},
+                 {:parent1, [{:child3, :grandchild1}, {:child2, [:grandchild2, :grandchild1]}]}
                ]
              } = conn.assigns.phoenix_helper_query
     end
@@ -75,7 +87,8 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         )
         |> QueryParser.call(%Query{available_includes: available_includes})
 
-      assert %Query{includes: [:par, {:parent, :child}]} = conn.assigns.phoenix_helper_query
+      assert %Query{includes: [:par, :parent, {:parent, :child}]} =
+               conn.assigns.phoenix_helper_query
     end
 
     test "when available_includes is by key, returns the includes according to the same keys" do
