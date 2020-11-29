@@ -72,12 +72,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> Enum.uniq()
     |> Enum.filter(&(&1 in available_includes))
     |> split_string_to_atoms(@include_separator)
-    # |> most_nested_first()
-    |> IO.inspect(label: "BEFORE")
-    |> Enum.reduce([], fn includes, acc ->
-      acc |> build_includes(includes)
-    end)
-    |> IO.inspect(label: "AFTER")
+    |> merge_includes_by_nested_depth()
     |> to_ecto_preload_format()
     |> List.wrap()
   end
@@ -116,22 +111,30 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     %{number: number, size: size}
   end
 
-  defp build_includes(keyword, []), do: keyword
-
-  defp build_includes(keyword, [key | [value]]) do
-    current_value = Keyword.get(keyword, key, [])
-    Keyword.put(keyword, key, [value | current_value])
+  defp merge_includes_by_nested_depth(includes) do
+    includes
+    |> Enum.group_by(&length/1)
+    |> Enum.reduce([], fn {_deep, includes}, acc ->
+      acc ++ merge_includes(includes)
+    end)
   end
 
-  defp build_includes(keyword, [key | keys] = a) do
-    IO.inspect(a)
-    value = Keyword.get(keyword, key, [])
-    Keyword.put(keyword, key, build_includes(value, keys))
+  defp merge_includes(includes) do
+    includes
+    |> Enum.reduce([], fn includes, acc ->
+      merge_includes(acc, includes)
+    end)
   end
 
-  # defp most_nested_first(includes) do
-  #   includes |> Enum.sort_by(&length/1, &(&1 >= &2))
-  # end
+  defp merge_includes(acc, [key | []]) do
+    current_value = Keyword.get(acc, key, [])
+    Keyword.put(acc, key, current_value)
+  end
+
+  defp merge_includes(acc, [first_key | keys]) do
+    value = Keyword.get(acc, first_key, [])
+    Keyword.put(acc, first_key, merge_includes(value, keys))
+  end
 
   _ = """
   Split string or list of string by a separator and convert the result to a list of atoms

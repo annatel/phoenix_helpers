@@ -45,7 +45,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
 
       assert %Query{
                available_includes: ^available_includes,
-               includes: [:include1, {:include1, :include2}, :include0]
+               includes: [:include0, :include1, {:include1, :include2}]
              } = conn.assigns.phoenix_helper_query
     end
 
@@ -70,13 +70,9 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{
                includes: [
                  :parent2,
-                 {:parent1,
-                  [
-                    :child2,
-                    :child1,
-                    {:child3, :grandchild1},
-                    {:child2, [:grandchild2, :grandchild1]}
-                  ]}
+                 :parent1,
+                 {:parent1, [:child2, :child1]},
+                 {:parent1, [{:child3, :grandchild1}, {:child2, [:grandchild2, :grandchild1]}]}
                ]
              } = conn.assigns.phoenix_helper_query
     end
@@ -91,7 +87,8 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         )
         |> QueryParser.call(%Query{available_includes: available_includes})
 
-      assert %Query{includes: [:par, {:parent, :child}]} = conn.assigns.phoenix_helper_query
+      assert %Query{includes: [:par, :parent, {:parent, :child}]} =
+               conn.assigns.phoenix_helper_query
     end
 
     test "when available_includes is by key, returns the includes according to the same keys" do
