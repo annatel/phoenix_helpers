@@ -13,7 +13,7 @@ by adding `phoenix_helpers` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:phoenix_helpers, "~> 0.5.0"}
+    {:phoenix_helpers, "~> 0.6.0"}
   ]
 end
 ```
@@ -61,30 +61,54 @@ iex> MyApp.UserView.render("user.json", %{user: user})
 plug PhoenixHelpers.Plug.QueryParser,
   include: ~w(posts posts.user comments)
   filter: ~w(name)
+  sort: ~w(id name)
 ```
+
 The plug will add a `PhoenixHelpers.Query` struct called `phoenix_helper_query` to your conn.assigns.  
 The `includes` will be parsed to the Ecto preload format.
 
 ### Filter
+
 `/?filter[key1]=value1&filter[key2]=value2`
+
 ```elixir
 %{filters: [key1: "value1", key2: "value2"]} = conn.assigns.phoenix_helper_query
 ```
 
 ### Page
+
 `/?page[number]=2&page[size]=100`
+
 ```elixir
 %{page: %{size: 2, number: 100}} = conn.assigns.phoenix_helper_query
 ```
 
 ### Include
+
 `/?include[]=posts.user&include[]=comments`
+
 ```elixir
 %{includes: [:comments, {posts: :user}]} = conn.assigns.phoenix_helper_query
 ```
 
 ### Query
+
 `/?q=search_query`
+
 ```elixir
 %{q: "search_query"} = conn.assigns.phoenix_helper_query
+```
+
+### Sort
+
+`/?sort=name`
+
+```elixir
+%{sort_fields: [asc: :name]} = conn.assigns.phoenix_helper_query
+```
+
+`/?sort[]=-id&sort[]=name`
+
+```elixir
+%{sort_fields: [desc: :id, asc: :name]} = conn.assigns.phoenix_helper_query
 ```
