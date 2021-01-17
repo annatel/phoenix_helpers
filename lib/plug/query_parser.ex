@@ -29,6 +29,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     Query.new(
       Keyword.get(opts, :include),
       Keyword.get(opts, :filter),
+      Keyword.get(opts, :sort),
       Keyword.get(opts, :default_page_size),
       Keyword.get(opts, :max_page_size)
     )
@@ -45,6 +46,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
       query
       |> Map.put(:includes, parse_include(query, Map.get(query_params, "include")))
       |> Map.put(:filters, parse_filter(query, Map.get(query_params, "filter")))
+      |> Map.put(:sort_fields, parse_sort_fields(query, Map.get(query_params, "sort")))
       |> Map.put(:page, parse_page(query, Map.get(query_params, "page")))
       |> Map.put(:q, Map.get(query_params, "q"))
 
@@ -97,6 +99,25 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> Enum.uniq_by(fn {key, _} -> key end)
     |> Enum.map(fn {key, value} -> {String.to_existing_atom(key), value} end)
   end
+
+  defp parse_sort_fields(%Query{}, nil), do: []
+
+  defp parse_sort_fields(%Query{available_sort_fields: available_sort_fields}, sort_fields)
+       when is_list(available_sort_fields) do
+    parse_sort_fields(available_sort_fields, List.wrap(sort_fields))
+  end
+
+  defp parse_sort_fields(available_sort_fields, sort_fields) do
+    sort_fields
+    |> Enum.map(&build_sort/1)
+    |> Enum.filter(fn {_direction, field} -> field in available_sort_fields end)
+    |> Enum.uniq_by(fn {_direction, field} -> field end)
+    |> Enum.map(fn {direction, field} -> {direction, String.to_existing_atom(field)} end)
+    |> List.flatten()
+  end
+
+  defp build_sort("-" <> field), do: {:desc, field}
+  defp build_sort(field), do: {:asc, field}
 
   defp parse_page(%Query{} = query, nil), do: parse_page(query, %{})
 

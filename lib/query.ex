@@ -10,6 +10,8 @@ defmodule PhoenixHelpers.Query do
             includes: nil,
             available_filters: [],
             filters: [],
+            available_sort_fields: [],
+            sort_fields: [],
             max_page_size: @max_page_size,
             default_page_size: @default_page_size,
             page: nil,
@@ -20,17 +22,26 @@ defmodule PhoenixHelpers.Query do
           includes: [atom] | nil,
           available_filters: [binary] | nil,
           filters: keyword,
+          available_sort_fields: [binary] | nil,
+          sort_fields: keyword,
           max_page_size: integer,
           default_page_size: integer,
           page: %{number: integer, size: integer} | nil,
           q: nil
         }
 
-  @spec new(list, list, integer | nil, integer | nil) :: %__MODULE__{}
-  def new(include \\ [], filter \\ [], default_page_size \\ nil, max_page_size \\ nil) do
+  @spec new(list, list, list, integer | nil, integer | nil) :: %__MODULE__{}
+  def new(
+        includes \\ [],
+        filters \\ [],
+        sort_fields \\ [],
+        default_page_size \\ nil,
+        max_page_size \\ nil
+      ) do
     fields = [
-      available_includes: include,
-      available_filters: filter,
+      available_includes: includes,
+      available_filters: filters,
+      available_sort_fields: sort_fields,
       default_page_size: default_page_size || @default_page_size,
       max_page_size: max_page_size || @max_page_size
     ]

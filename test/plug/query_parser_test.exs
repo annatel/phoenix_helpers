@@ -295,4 +295,46 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
              } = conn.assigns.phoenix_helper_query
     end
   end
+
+  describe "parse_sort" do
+    test "when the sort params is part of the available sort fields, assigns the include to the query_parser" do
+      available_sort_fields = ["field1", "field2"]
+
+      conn =
+        conn(:get, "/?sort=field1")
+        |> QueryParser.call(%Query{available_sort_fields: available_sort_fields})
+
+      assert %Query{available_sort_fields: ^available_sort_fields, sort_fields: [asc: :field1]} =
+               conn.assigns.phoenix_helper_query
+
+      conn =
+        conn(:get, "/?sort=-field1")
+        |> QueryParser.call(%Query{available_sort_fields: available_sort_fields})
+
+      assert %Query{sort_fields: [desc: :field1]} = conn.assigns.phoenix_helper_query
+
+      conn =
+        conn(:get, "/?sort[]=-field1&sort[]=field2")
+        |> QueryParser.call(%Query{available_sort_fields: available_sort_fields})
+
+      assert %Query{sort_fields: [desc: :field1, asc: :field2]} =
+               conn.assigns.phoenix_helper_query
+    end
+
+    test "when the sort params is not exist, set the sort field to an empty list" do
+      conn =
+        conn(:get, "/")
+        |> QueryParser.call(%Query{available_sort_fields: ["field"]})
+
+      assert %Query{sort_fields: []} = conn.assigns.phoenix_helper_query
+    end
+
+    test "when the sort params is not part of the available sort fields, ignore it" do
+      conn =
+        conn(:get, "/?sort=field")
+        |> QueryParser.call(%Query{available_sort_fields: []})
+
+      assert %Query{sort_fields: []} = conn.assigns.phoenix_helper_query
+    end
+  end
 end
