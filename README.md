@@ -20,9 +20,9 @@ end
 
 The docs can be found at [https://hexdocs.pm/phoenix_helpers](https://hexdocs.pm/phoenix_helpers).
 
-# Usage
+## Usage
 
-## Render fields
+### Render fields
 
 Instead of having to map each field, and to check if an association is loaded or not, just call the `render_fields` function.
 
@@ -55,7 +55,7 @@ iex> MyApp.UserView.render("user.json", %{user: user})
 %{id: 1, email: "email", posts: %{title: "post 1}}
 ```
 
-## Parsing the query params
+### Parsing the query params
 
 ```elixir
 plug PhoenixHelpers.Plug.QueryParser,
@@ -67,7 +67,7 @@ plug PhoenixHelpers.Plug.QueryParser,
 The plug will add a `PhoenixHelpers.Query` struct called `phoenix_helper_query` to your conn.assigns.  
 The `includes` will be parsed to the Ecto preload format.
 
-### Filter
+#### Filter
 
 `/?filter[key1]=value1&filter[key2]=value2`
 
@@ -75,7 +75,7 @@ The `includes` will be parsed to the Ecto preload format.
 %{filters: [key1: "value1", key2: "value2"]} = conn.assigns.phoenix_helper_query
 ```
 
-### Page
+#### Page
 
 `/?page[number]=2&page[size]=100`
 
@@ -83,7 +83,7 @@ The `includes` will be parsed to the Ecto preload format.
 %{page: %{size: 2, number: 100}} = conn.assigns.phoenix_helper_query
 ```
 
-### Include
+#### Include
 
 `/?include[]=posts.user&include[]=comments`
 
@@ -91,7 +91,7 @@ The `includes` will be parsed to the Ecto preload format.
 %{includes: [:comments, {posts: :user}]} = conn.assigns.phoenix_helper_query
 ```
 
-### Query
+#### Query
 
 `/?q=search_query`
 
@@ -99,7 +99,7 @@ The `includes` will be parsed to the Ecto preload format.
 %{q: "search_query"} = conn.assigns.phoenix_helper_query
 ```
 
-### Sort
+#### Sort
 
 `/?sort=name`
 
