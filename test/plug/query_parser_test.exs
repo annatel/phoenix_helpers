@@ -217,6 +217,19 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
              } = conn.assigns.phoenix_helper_query
     end
 
+    test "multiple value for the same key" do
+      available_filters = ["key1"]
+
+      conn =
+        conn(:get, "/?filter[key1][]=value1&filter[key1][]=value2")
+        |> QueryParser.call(%Query{available_filters: available_filters})
+
+      assert %Query{
+               available_filters: ^available_filters,
+               filters: [{:key1, ["value1", "value2"]}]
+             } = conn.assigns.phoenix_helper_query
+    end
+
     test "ignore not available filters" do
       available_filters = ["key1"]
 
