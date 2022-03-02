@@ -8,7 +8,7 @@ defmodule PhoenixHelpers.MixProject do
     [
       app: :phoenix_helpers,
       version: @version,
-      elixir: "~> 1.9",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
