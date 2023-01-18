@@ -28,7 +28,7 @@ defmodule PhoenixHelpers.MixProject do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:phoenix, "~> 1.5"},
+      {:phoenix, "~> 1.6"},
       {:jason, "~> 1.0", only: [:test]},
       {:ecto, "~> 3.0"}
     ]
