@@ -269,6 +269,19 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
              } = conn.assigns.phoenix_helper_query
     end
 
+    test "when available_filters are atoms" do
+      available_filters = %{index: [:key1], show: [:key2]}
+
+      conn =
+        conn(:get, "/?filter[key1]=value1&filter[key2]=value2")
+        |> QueryParser.call(%Query{available_filters: available_filters})
+
+      assert %Query{
+               available_filters: ^available_filters,
+               filters: %{index: [{:key1, "value1"}], show: [{:key2, "value2"}]}
+             } = conn.assigns.phoenix_helper_query
+    end
+
     test "when filter is empty" do
       available_filters = ["key1"]
 

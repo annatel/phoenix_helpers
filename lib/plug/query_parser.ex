@@ -95,7 +95,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
 
   defp parse_filter(available_filters, filter) do
     filter
-    |> Enum.filter(fn {key, _} -> key in available_filters end)
+    |> Enum.filter(fn {key, _} -> key in Enum.map(available_filters, &to_string/1) end)
     |> Enum.uniq_by(fn {key, _} -> key end)
     |> Enum.map(fn {key, value} -> {String.to_existing_atom(key), value} end)
   end
