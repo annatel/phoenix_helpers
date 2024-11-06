@@ -2,7 +2,7 @@ defmodule PhoenixHelpers.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/elielhaouzi/phoenix_helpers"
-  @version "0.8.1"
+  @version "0.9.0"
 
   def project do
     [

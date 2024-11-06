@@ -65,4 +65,16 @@ defmodule PhoenixHelpers.Views.HelpersTest do
              %{id: 2}
            ) == %{id: 2}
   end
+
+  test "render with assigns" do
+    user = %MyApp.User{id: 1, posts: [%MyApp.Post{title: "title"}]}
+
+    fields = [
+      posts: {MyApp.PostView, "post.json"}
+    ]
+
+    assert PhoenixViewHelpers.render_fields(fields, user, %{a: "a"}) == %{
+             posts: [%{title: "title", a: "a"}]
+           }
+  end
 end

@@ -1,5 +1,6 @@
 defmodule PhoenixHelpers.Views.Helpers do
   @spec render_fields(list(), map) :: map
+  @spec render_fields(list(), map, map) :: map
   def render_fields(fields, data, assigns \\ %{}) when is_map(data) do
     fields
     |> Enum.filter(&field_loaded?(&1, data))

@@ -13,7 +13,7 @@ end
 defmodule MyApp.UserView do
   use Phoenix.View, root: "test/fixtures/templates"
 
-  def render("user.json", %{user: user} = _assigns) do
+  def render("user.json", %{user: user}) do
     %{id: user.id, email: user.email}
   end
 end
@@ -21,7 +21,15 @@ end
 defmodule MyApp.PostView do
   use Phoenix.View, root: "test/fixtures/templates"
 
-  def render("post.json", %{post: post} = _assigns) do
+  def render_one("post.json", %{post: post}) do
+    %{title: post.title}
+  end
+
+  def render("post.json", %{post: post, a: "a"}) do
+    %{title: post.title, a: "a"}
+  end
+
+  def render("post.json", %{post: post}) do
     %{title: post.title}
   end
 end
@@ -29,7 +37,7 @@ end
 defmodule MyApp.LoginView do
   use Phoenix.View, root: "test/fixtures/templates"
 
-  def render("login.json", %{login: login} = _assigns) do
+  def render("login.json", %{login: login}) do
     %{ip: login.ip}
   end
 end
