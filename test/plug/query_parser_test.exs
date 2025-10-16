@@ -203,6 +203,21 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
     end
   end
 
+  describe "rand" do
+    test "when rand is in the query_param, set the rand" do
+      conn = conn(:get, "/?rand=true") |> QueryParser.call(%Query{})
+      assert %Query{rand: "true"} = conn.assigns.phoenix_helper_query
+
+      conn = conn(:get, "/?rand=false") |> QueryParser.call(%Query{})
+      assert %Query{rand: "false"} = conn.assigns.phoenix_helper_query
+    end
+
+    test "when rand not is in the query_param, set the rand to nil the query" do
+      conn = conn(:get, "/") |> QueryParser.call(%Query{})
+      assert %Query{rand: nil} = conn.assigns.phoenix_helper_query
+    end
+  end
+
   describe "parse_filter" do
     test "set filter" do
       available_filters = ["key1", "key2"]

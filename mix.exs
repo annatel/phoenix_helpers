@@ -2,7 +2,7 @@ defmodule PhoenixHelpers.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/elielhaouzi/phoenix_helpers"
-  @version "0.9.0"
+  @version "0.10.0"
 
   def project do
     [
@@ -30,7 +30,7 @@ defmodule PhoenixHelpers.MixProject do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:phoenix, "~> 1.6"},
       {:jason, "~> 1.0", only: [:test]},
-      {:ecto, "~> 3.0"}
+      {:ecto_sql, "~> 3.11"}
     ]
   end
 
