@@ -203,21 +203,6 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
     end
   end
 
-  describe "rand" do
-    test "when rand is in the query_param, set the rand" do
-      conn = conn(:get, "/?rand=true") |> QueryParser.call(%Query{})
-      assert %Query{rand: "true"} = conn.assigns.phoenix_helper_query
-
-      conn = conn(:get, "/?rand=false") |> QueryParser.call(%Query{})
-      assert %Query{rand: "false"} = conn.assigns.phoenix_helper_query
-    end
-
-    test "when rand not is in the query_param, set the rand to nil the query" do
-      conn = conn(:get, "/") |> QueryParser.call(%Query{})
-      assert %Query{rand: nil} = conn.assigns.phoenix_helper_query
-    end
-  end
-
   describe "parse_filter" do
     test "set filter" do
       available_filters = ["key1", "key2"]
@@ -339,7 +324,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
 
   describe "parse_sort" do
     test "when the sort params is part of the available sort fields, assigns the include to the query_parser" do
-      available_sort_fields = ["field1", "field2"]
+      available_sort_fields = ["field1", "field2", "rand"]
 
       conn =
         conn(:get, "/?sort=field1")
@@ -360,6 +345,12 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
 
       assert %Query{sort_fields: [desc: :field1, asc: :field2]} =
                conn.assigns.phoenix_helper_query
+
+      conn =
+        conn(:get, "/?sort[]=rand")
+        |> QueryParser.call(%Query{available_sort_fields: available_sort_fields})
+
+      assert %Query{sort_fields: [asc: :rand]} = conn.assigns.phoenix_helper_query
     end
 
     test "when the sort params is not exist, set the sort field to an empty list" do

@@ -15,8 +15,7 @@ defmodule PhoenixHelpers.Query do
             max_page_size: @max_page_size,
             default_page_size: @default_page_size,
             page: nil,
-            q: nil,
-            rand: nil
+            q: nil
 
   @type t :: %__MODULE__{
           available_includes: [binary] | nil,
@@ -28,8 +27,7 @@ defmodule PhoenixHelpers.Query do
           max_page_size: integer,
           default_page_size: integer,
           page: %{number: integer, size: integer} | nil,
-          q: nil,
-          rand: nil
+          q: nil
         }
 
   @spec new(list, list, list, integer | nil, integer | nil) :: %__MODULE__{}

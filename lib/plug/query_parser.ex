@@ -49,7 +49,6 @@ defmodule PhoenixHelpers.Plug.QueryParser do
       |> Map.put(:sort_fields, parse_sort_fields(query, Map.get(query_params, "sort")))
       |> Map.put(:page, parse_page(query, Map.get(query_params, "page")))
       |> Map.put(:q, Map.get(query_params, "q"))
-      |> Map.put(:rand, Map.get(query_params, "rand"))
 
     conn
     |> assign(:phoenix_helper_query, phoenix_helper_query)
@@ -117,6 +116,7 @@ defmodule PhoenixHelpers.Plug.QueryParser do
     |> List.flatten()
   end
 
+  defp build_sort("rand"), do: {:asc, "rand"}
   defp build_sort("-" <> field), do: {:desc, field}
   defp build_sort(field), do: {:asc, field}
 
