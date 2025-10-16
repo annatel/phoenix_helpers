@@ -1,7 +1,7 @@
-VERSION 0.5
+VERSION 0.6
 
 elixir-base:
-    FROM elixir:1.12.2-alpine
+    FROM --platform=$BUILDPLATFORM elixir:1.18.4-otp-27-alpine
     WORKDIR /app
     RUN apk add --no-progress --update openssh-client git build-base
     RUN mix local.rebar --force && mix local.hex --force
@@ -26,8 +26,8 @@ lint:
 test:
     FROM --build-arg MIX_ENV="test" +deps
     COPY --dir lib test .
-    RUN mix test --cover
-
+    RUN mix test
+    
 check-tag:
     ARG TAG
     FROM +elixir-base

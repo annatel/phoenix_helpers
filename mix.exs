@@ -8,7 +8,7 @@ defmodule PhoenixHelpers.MixProject do
     [
       app: :phoenix_helpers,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
@@ -30,7 +30,7 @@ defmodule PhoenixHelpers.MixProject do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:phoenix, "~> 1.6"},
       {:jason, "~> 1.0", only: [:test]},
-      {:ecto_sql, "~> 3.11"}
+      {:ecto, "~> 3.11"}
     ]
   end
 
