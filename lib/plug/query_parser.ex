@@ -135,11 +135,27 @@ defmodule PhoenixHelpers.Plug.QueryParser do
 
   defp merge_includes_by_nested_depth(includes) do
     includes
+    |> then(fn includes ->
+      includes |> Enum.sort_by(&length/1, :desc) |> remove_already_exist_in_nested()
+    end)
     |> Enum.group_by(&length/1)
     |> Enum.reduce([], fn {_deep, includes}, acc ->
       acc ++ merge_includes(includes)
     end)
   end
+
+  defp remove_already_exist_in_nested([h | acc]) do
+    [h | remove_already_exist_in_nested(remove_contiguous_sublists(Enum.reverse(h), acc))]
+  end
+
+  defp remove_already_exist_in_nested([]), do: []
+
+  defp remove_contiguous_sublists([_ | t] = pattern, acc) do
+    acc = Enum.reject(acc, &(&1 == Enum.reverse(pattern)))
+    remove_contiguous_sublists(t, acc)
+  end
+
+  defp remove_contiguous_sublists([], acc), do: acc
 
   defp merge_includes(includes) do
     includes

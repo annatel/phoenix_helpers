@@ -45,7 +45,34 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
 
       assert %Query{
                available_includes: ^available_includes,
-               includes: [:include0, :include1, {:include1, :include2}]
+               includes: [:include0, {:include1, :include2}]
+             } = conn.assigns.phoenix_helper_query
+    end
+
+    test "remove the standalone include since including nested associations will automatically include the parent" do
+      available_includes = [
+        "parent1",
+        "parent1.child1",
+        "parent1.child2",
+        "parent1.child2.grandchild1",
+        "parent1.child2.grandchild2",
+        "parent1.child3.grandchild1",
+        "parent2"
+      ]
+
+      conn =
+        conn(
+          :get,
+          "/?include[]=parent1&include[]=parent1.child1&include[]=parent1.child2&include[]=parent1.child2.grandchild1&include[]=parent1.child2.grandchild2&include[]=parent1.child3.grandchild1&include[]=parent2"
+        )
+        |> QueryParser.call(%Query{available_includes: available_includes})
+
+      assert %Query{
+               includes: [
+                 :parent2,
+                 {:parent1, :child1},
+                 {:parent1, [{:child3, :grandchild1}, {:child2, [:grandchild2, :grandchild1]}]}
+               ]
              } = conn.assigns.phoenix_helper_query
     end
 
@@ -70,8 +97,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
       assert %Query{
                includes: [
                  :parent2,
-                 :parent1,
-                 {:parent1, [:child2, :child1]},
+                 {:parent1, :child1},
                  {:parent1, [{:child3, :grandchild1}, {:child2, [:grandchild2, :grandchild1]}]}
                ]
              } = conn.assigns.phoenix_helper_query
@@ -87,7 +113,7 @@ defmodule PhoenixHelpers.Plug.QueryParserTest do
         )
         |> QueryParser.call(%Query{available_includes: available_includes})
 
-      assert %Query{includes: [:par, :parent, {:parent, :child}]} =
+      assert %Query{includes: [:par, {:parent, :child}]} =
                conn.assigns.phoenix_helper_query
     end
 
